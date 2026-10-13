@@ -239,6 +239,7 @@ node printer-mock.js
 
 ---
 
-## 📄 License
+## Author
 
-This project is open-source and available under the [MIT License](LICENSE.txt).
+- **Muhammad Alaasar** - [eng.mo.alaasar@gmail.com](mailto:eng.mo.alaasar@gmail.com)
+
