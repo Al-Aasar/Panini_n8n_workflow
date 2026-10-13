@@ -1,0 +1,2807 @@
+{
+  "name": "Restaurant_P",
+  "nodes": [
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.data.message.conversation }}",
+                    "rightValue": "=text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "7d94004a-9b67-4715-a68f-2a996350d47b"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f6874db5-6e9d-4af3-b0e1-cf7ddf3198d3",
+                    "leftValue": "={{ $json.body.data.message.audioMessage }}",
+                    "rightValue": "=audio",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "69a81c8a-2dea-4648-8fce-3ddc4ccdd6e0",
+                    "leftValue": "={{ $json.body.data.message.imageMessage }}",
+                    "rightValue": "=image",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "image"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "50a36c02-850e-479f-b931-da7a8b9d48bd",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -32,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "55a08394-dd2b-4ba0-aed9-882ad1e2d102",
+              "name": "text",
+              "value": "={{ $json.body.data.message.conversation }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e1c33a27-0beb-4963-a28e-f33026209389",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        608,
+        -224
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3-flash-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3-flash-preview",
+          "cachedResultUrl": ""
+        },
+        "inputType": "binary",
+        "options": {}
+      },
+      "id": "6e665787-8ccf-4798-97a1-d3824cb757e3",
+      "name": "Transcribe a recording",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "position": [
+        736,
+        -48
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "55a08394-dd2b-4ba0-aed9-882ad1e2d102",
+              "name": "text",
+              "value": "={{ $json.content.parts[0].text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "088e6572-4393-4ef3-8ece-8541d16d497a",
+      "name": "Edit Fields1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        928,
+        -48
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3-flash-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3-flash-preview"
+        },
+        "text": "Look at this image sent by a restaurant customer on WhatsApp. Reply with ONLY a JSON object, no markdown and no extra text, in this shape: {\"is_payment_receipt\": true or false, \"amount\": \"amount shown in the image or empty string\", \"method\": \"instapay or vodafone_cash or bank or unknown\", \"description\": \"short description of the image in Arabic\"}. Set is_payment_receipt to true ONLY if the image is a screenshot of a money transfer or payment confirmation (InstaPay, Vodafone Cash, bank transfer). Otherwise false.",
+        "inputType": "binary",
+        "options": {}
+      },
+      "id": "7bc66fb2-21a3-4732-b157-9b149a46474c",
+      "name": "Analyze an image",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "position": [
+        720,
+        144
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "55a08394-dd2b-4ba0-aed9-882ad1e2d102",
+              "name": "text",
+              "value": "=photo description :{{ $json.description }} \n\nuser message :\n{{ $('Webhook').item.json.body.data.message.imageMessage.caption }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "df5f0dc7-016e-4dbd-b921-a63398f1ee33",
+      "name": "Edit Fields2",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        928,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "9e66b6cf-46fe-42e6-8f4f-0e44388af757",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1232,
+        -256
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.data.key.remoteJid }}_v4",
+        "contextWindowLength": 10
+      },
+      "id": "5be78ca4-b9ed-43f1-8344-358b98eead94",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        1376,
+        -256
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3821ea07-cc30-4865-ba8d-b2486538bcb3",
+              "leftValue": "={{ $('Webhook').item.json.body.data.message.audioMessage }}",
+              "rightValue": "image",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "4109a080-9bfe-44f7-a9a0-6ccbf71a45c8",
+      "name": "If2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1712,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/audio/speech",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  \"model\": \"canopylabs/orpheus-v1-english\",\n  \"input\": $('AI Agent').item.json.output,\n  \"voice\": \"troy\",\n  \"response_format\": \"wav\"\n}) }}",
+        "options": {}
+      },
+      "id": "71186346-d11d-486b-86e6-3d89e5830755",
+      "name": "HTTP Request2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1968,
+        -80
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "YOUR_CRED_ID",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "YOUR_WEBHOOK_PATH",
+        "options": {}
+      },
+      "id": "c7b2bbcd-6c56-4101-af41-24b11ad078ac",
+      "name": "Webhook",
+      "webhookId": "b3bf2586-f199-47ae-9d54-1347b82df414",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -368,
+        -48
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "data.base64",
+        "options": {
+          "mimeType": "audio/ogg"
+        }
+      },
+      "id": "3e444b68-f704-4c1f-af20-160a1a83cac3",
+      "name": "Convert to File",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        544,
+        -48
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "data.base64",
+        "options": {}
+      },
+      "id": "b5109e25-643e-49df-89fe-c16a3e55e847",
+      "name": "Convert to File1",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        512,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "chat-api",
+        "operation": "get-media-base64",
+        "instanceName": "={{ $json.body.instance }}",
+        "messageId": "={{ $json.body.data.key.id }}"
+      },
+      "id": "6c346bb4-cfe5-4909-be80-468af445fb15",
+      "name": "Get media in base64",
+      "type": "n8n-nodes-evolution-api-english.evolutionApi",
+      "typeVersion": 1,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "position": [
+        288,
+        -48
+      ],
+      "credentials": {
+        "evolutionApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Evolution API account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "chat-api",
+        "operation": "get-media-base64",
+        "instanceName": "={{ $json.body.instance }}",
+        "messageId": "={{ $json.body.data.key.id }}"
+      },
+      "id": "bd41eebe-3589-4595-861c-02a9774a351a",
+      "name": "Get media in base",
+      "type": "n8n-nodes-evolution-api-english.evolutionApi",
+      "typeVersion": 1,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "position": [
+        288,
+        144
+      ],
+      "credentials": {
+        "evolutionApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Evolution API account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $('Webhook').item.json.body.instance }}",
+        "remoteJid": "=+{{ $('Webhook').item.json.body.data.key.remoteJidAlt.split('@')[0] }}",
+        "messageText": "={{ $('AI Agent').item.json.output }}",
+        "options_message": {
+          "delay": 1200
+        }
+      },
+      "id": "cc195c93-99e9-4077-84d5-91d2cbfe94f4",
+      "name": "Send text",
+      "type": "n8n-nodes-evolution-api-english.evolutionApi",
+      "typeVersion": 1,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "position": [
+        1984,
+        128
+      ],
+      "credentials": {
+        "evolutionApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Evolution API account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8080/message/sendWhatsAppAudio/n8n_test",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "YOUR_EVOLUTION_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $('Webhook').item.json.body.data.key.remoteJid.split('@')[0] }}\",\n  \"audio\": \"{{ $json.base64Audio }}\",\n  \"delay\": 1200\n}",
+        "options": {}
+      },
+      "id": "127d4baa-47aa-466e-902a-3098afd00190",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        3088,
+        -80
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "5867241f-8c64-4775-babf-fd44f2264b70",
+      "name": "Think",
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        1520,
+        -256
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "=انت مساعد مطعم Panini على واتساب. بتتكلم باللهجة المصرية بأدب وباختصار.\n\n1) المنيو:\n- استخدم أداة Send_Menu_Image فقط لو العميل طلب المنيو صراحة أو سأل \"عندكم ايه\" بشكل عام، وبعدها اكتب له رد قصير.\n- لو العميل ذكر صنف أو بدأ يطلب (زي \"محتاج بيتزا رانش كبير\") متبعتش صورة المنيو أبدًا، وروح على أخد الأوردر مباشرة. ومتبعتش صورة المنيو أكتر من مرة في نفس المحادثة إلا لو طلبها تاني.\n- لو سأل عن صنف معين (سعر أو مكونات أو متاح ولا لأ) اسأل أداة Excel Agent لأنها بتقرا من ملف المنيو. لازم تبعتلها سؤال واضح فيه اسم الصنف والحجم والمطلوب (مثال: سعر بيتزا رانش كرانشي حجم L)، ومتستدعيهاش من غير سؤال. متخترعش أصناف ولا أسعار. لو الصنف مش موجود قول كده بوضوح.\n\n2) أخد الأوردر:\n- لو العميل عايز يطلب، اجمع منه: الاسم، الأصناف والكميات (والملاحظات لو في)، العنوان، رقم التليفون، ورقم تليفون بديل (اختياري).\n- احسب الإجمالي من أسعار المنيو (اسأل Excel Agent) وقوله الإجمالي يراجعه.\n- الدفع بالتحويل بس (إنستاباي أو فودافون كاش). اسأله هيحول بأنهي طريقة. مفيش دفع كاش.\n- بيانات الدفع (استخدمها زي ما هي ومتغيرش فيها حاجة ومتخترعش بيانات تانية):\n  * إنستاباي: العنوان YOUR_INSTAPAY_ADDRESS، واللينك المباشر للتحويل: YOUR_INSTAPAY_PAYMENT_LINK\n  * فودافون كاش: الرقم YOUR_PHONE_NUMBER\n- الرقم البديل اختياري: متسألش عنه تاني لو العميل ما ذكرهوش وابعته فاضي في alt_phone. أول ما العميل يوافق على الأوردر والإجمالي (زي: تمام، أكد، موافق، اه) لازم تستدعي أداة Save_Order_Details فورًا قبل أي رد. لو العميل عدّل الأوردر قبل ما يبعت التحويل، استخدم الأداة تاني بالبيانات الجديدة وهتحدّث نفس الأوردر.\n- ممنوع تقول \"حفظت الأوردر\" أو تبعت بيانات الدفع إلا بعد ما أداة Save_Order_Details ترجع نجاح فعلًا. لو لسه ما استدعيتهاش، استدعيها الأول.\n- بعد الحفظ ابعتله بيانات الدفع بتاعة الطريقة اللي اختارها بس (لو إنستاباي ابعت العنوان واللينك، ولو فودافون كاش ابعت الرقم)، وقوله يحوّل الإجمالي ويبعت صورة التحويل (سكرين شوت) هنا في الشات. متقولش إن الأوردر اتأكد.\n\n3) مهم:\n- انت مش بتسجل في الشيت ولا بتطبع ولا بتأكد الأوردر. الموظف هو اللي بيأكد بعد ما يشوف صورة التحويل، والعميل بيتبلغ تلقائي.\n- لو العميل سأل عن حالة أوردره بعد التحويل قوله إن الأوردر عند الموظف للمراجعة وهيوصله تأكيد.\n- كن مختصر ومتكررش الأسئلة بدون داعي."
+        }
+      },
+      "id": "814cc946-7c2b-4bb9-b5a1-9af3c366f30f",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1312,
+        -64
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "fileSelector": "=/tmp/{{ $('Webhook').item.json.body.data.key.id }}_output.ogg",
+        "options": {}
+      },
+      "id": "129a377c-e38f-42b2-bbfc-da2e027b52b1",
+      "name": "Read Files from Disk1",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        2640,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/tmp/{{ $('Webhook').item.json.body.data.key.id }}.wav",
+        "options": {}
+      },
+      "id": "3072348e-ead9-4e26-92f1-d3529a32ae49",
+      "name": "Write Files from Disk",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        2192,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "command": "=ffmpeg -y -i /tmp/{{ $('Webhook').item.json.body.data.key.id }}.wav -c:a libopus -b:a 64k -ar 16000 -ac 1 /tmp/{{ $('Webhook').item.json.body.data.key.id }}_output.ogg     "
+      },
+      "id": "723974c1-2b36-4c1a-a1cb-75224325b43a",
+      "name": "convert to ogg",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        2416,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const binaryData = await this.helpers.getBinaryDataBuffer(0, 'data');\nconst base64Audio = binaryData.toString('base64');\n\nreturn {\n  json: {\n    base64Audio: base64Audio\n  }\n};"
+      },
+      "id": "2d404c8b-436b-4479-93c6-0eca736c87dd",
+      "name": "base 64",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2864,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Looks up menu items, prices, ingredients and availability in the restaurant menu Google Sheet. Input: the question about the menu in plain text. Read-only.",
+        "text": "={{ $fromAI('query', 'سؤال واضح عن المنيو: اسم الصنف والحجم المطلوب، والمطلوب معرفته (السعر أو المكونات أو متاح ولا لأ). مثال: سعر بيتزا رانش كرانشي حجم L', 'string') }}",
+        "options": {
+          "systemMessage": "You read the restaurant menu from the Google Sheet using your tools. Answer only with data that exists in the sheet (item names, prices, details). Never invent items or prices. You are read-only: never write or change any sheet. Reply briefly in Arabic with the exact values."
+        }
+      },
+      "id": "0d74111a-7d25-4fd1-aeb3-f0c0f81a102a",
+      "name": "Excel Agent",
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        1264,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://YOUR_N8N_DOMAIN/mcp-test/Excel",
+        "serverTransport": "sse",
+        "options": {}
+      },
+      "id": "9266a940-192f-47c0-b9f3-0bc080501a7c",
+      "name": "MCP Client",
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.4,
+      "position": [
+        1456,
+        384
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "path": "Excel"
+      },
+      "id": "d61bb080-7e0a-427b-acab-8543a938b3d7",
+      "name": "MCP Server Trigger",
+      "webhookId": "fa9192c3-900a-4a65-82cd-6984e17b4fce",
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2.1,
+      "position": [
+        1616,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_MENU_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Panini menu",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_MENU_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 0,
+          "mode": "list",
+          "cachedResultName": "المنيو",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_MENU_SHEET_ID/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "d85cd993-0e56-469e-99ac-9924327a64c2",
+      "name": "Get Items Sheets",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1632,
+        384
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_CRED_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Sends the restaurant menu image to the customer on WhatsApp. Call it when the customer asks for the menu. It takes no input.",
+        "method": "POST",
+        "url": "=http://host.docker.internal:8080/message/sendMedia/{{ $('Webhook').item.json.body.instance }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ number: ($('Webhook').item.json.body.data.key.remoteJidAlt || $('Webhook').item.json.body.data.key.remoteJid).split('@')[0], mediatype: 'image', mimetype: 'image/jpeg', caption: 'المنيو', media: 'https://drive.google.com/uc?export=download&id=YOUR_MENU_IMAGE_DRIVE_ID', fileName: 'menu.jpg', delay: 1200 }) }}",
+        "options": {},
+        "optimizeResponse": true,
+        "fieldsToInclude": "selected",
+        "fields": "key,status"
+      },
+      "id": "a2000000-0000-4000-8000-000000000001",
+      "name": "Send_Menu_Image",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        1648,
+        -256
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "YOUR_CRED_ID",
+          "name": "Evolution API account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_DATA_TABLE_ID"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "wa_number",
+              "keyValue": "={{ ($('Webhook').item.json.body.data.key.remoteJidAlt || $('Webhook').item.json.body.data.key.remoteJid).split('@')[0] }}"
+            },
+            {
+              "keyName": "status",
+              "keyValue": "collecting"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "wa_instance": "={{ $('Webhook').item.json.body.instance }}",
+            "wa_number": "={{ ($('Webhook').item.json.body.data.key.remoteJidAlt || $('Webhook').item.json.body.data.key.remoteJid).split('@')[0] }}",
+            "status": "collecting",
+            "customer_name": "={{ $fromAI('customer_name', 'Customer name', 'string') }}",
+            "order_text": "={{ $fromAI('order_text', 'Order items with quantities and notes, as text', 'string') }}",
+            "total_price": "={{ $fromAI('total_price', 'Order total price', 'string') }}",
+            "address": "={{ $fromAI('address', 'Delivery address', 'string') }}",
+            "phone": "={{ $fromAI('phone', 'Customer phone number', 'string') }}",
+            "alt_phone": "={{ $fromAI('alt_phone', 'Alternative phone number, empty string if none', 'string') }}",
+            "payment_method": "={{ $fromAI('payment_method', 'instapay or vodafone_cash', 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "wa_instance",
+              "displayName": "wa_instance",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "wa_number",
+              "displayName": "wa_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "customer_name",
+              "displayName": "customer_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "order_text",
+              "displayName": "order_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "total_price",
+              "displayName": "total_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "address",
+              "displayName": "address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "alt_phone",
+              "displayName": "alt_phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "payment_method",
+              "displayName": "payment_method",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "order_code",
+              "displayName": "order_code",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "payment_file_id",
+              "displayName": "payment_file_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "awaiting_since",
+              "displayName": "awaiting_since",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "reminder_sent",
+              "displayName": "reminder_sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "a2000000-0000-4000-8000-000000000002",
+      "name": "Save_Order_Details",
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        1824,
+        -256
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.content.parts[0].text || '';\nconst cleaned = raw.replace(/```json|```/g, '').trim();\nlet d = {};\ntry { d = JSON.parse(cleaned); } catch (e) { d = { is_payment_receipt: false, description: raw }; }\nconst isReceipt = d.is_payment_receipt === true || d.is_payment_receipt === 'true';\nreturn [{ json: { is_receipt: isReceipt, amount: d.amount || '', method: d.method || '', description: d.description || raw } }];"
+      },
+      "id": "a2000000-0000-4000-8000-000000000003",
+      "name": "Parse Image",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        672
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "r1",
+              "leftValue": "={{ $json.is_receipt }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a2000000-0000-4000-8000-000000000004",
+      "name": "Is Payment Receipt?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        672
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_DATA_TABLE_ID"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "wa_number",
+              "keyValue": "={{ ($('Webhook').item.json.body.data.key.remoteJidAlt || $('Webhook').item.json.body.data.key.remoteJid).split('@')[0] }}"
+            },
+            {
+              "keyName": "status",
+              "keyValue": "collecting"
+            }
+          ]
+        },
+        "limit": 1
+      },
+      "id": "a2000000-0000-4000-8000-000000000005",
+      "name": "Find Pending Order",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "position": [
+        1264,
+        672
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "r2",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "collecting",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a2000000-0000-4000-8000-000000000006",
+      "name": "Has Pending Order?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1488,
+        672
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const o = $('Find Pending Order').first().json;\nconst img = $('Parse Image').first().json;\nconst code = 'P-' + String(o.id).padStart(4, '0');\nconst caption = [\n  '🧾 أوردر جديد بانتظار التأكيد',\n  'الكود: ' + code,\n  'العميل: ' + o.customer_name,\n  'الأوردر: ' + o.order_text,\n  'الإجمالي: ' + o.total_price,\n  'العنوان: ' + o.address,\n  'التليفون: ' + o.phone + (o.alt_phone ? ' / ' + o.alt_phone : ''),\n  'طريقة الدفع المختارة: ' + o.payment_method,\n  '------------------',\n  'المبلغ المقروء من الصورة: ' + (img.amount || 'غير واضح'),\n  'طريقة التحويل في الصورة: ' + (img.method || 'غير واضح')\n].join('\\n');\nreturn [{ json: { order_row_id: o.id, order_code: code, caption: caption }, binary: $('Convert to File1').first().binary }];"
+      },
+      "id": "a2000000-0000-4000-8000-000000000007",
+      "name": "Build Telegram Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1712,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "binaryData": true,
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "✅ تأكيد",
+                    "additionalFields": {
+                      "callback_data": "={{ 'ok|' + $json.order_code }}"
+                    }
+                  },
+                  {
+                    "text": "❌ رفض",
+                    "additionalFields": {
+                      "callback_data": "={{ 'no|' + $json.order_code }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "caption": "={{ $json.caption }}"
+        }
+      },
+      "id": "a2000000-0000-4000-8000-000000000008",
+      "name": "Send Receipt to Telegram",
+      "webhookId": "9012cdb2-c08b-4744-b80f-4517b3a9919a",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "position": [
+        1920,
+        576
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Telegram account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_DATA_TABLE_ID"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $('Build Telegram Message').item.json.order_row_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "awaiting_staff",
+            "order_code": "={{ $('Build Telegram Message').item.json.order_code }}",
+            "payment_file_id": "={{ ($json.result || $json).photo.slice(-1)[0].file_id }}",
+            "awaiting_since": "={{ $now.toISO() }}",
+            "reminder_sent": false
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "order_code",
+              "displayName": "order_code",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "payment_file_id",
+              "displayName": "payment_file_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "awaiting_since",
+              "displayName": "awaiting_since",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "reminder_sent",
+              "displayName": "reminder_sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": false,
+              "removed": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a2000000-0000-4000-8000-000000000009",
+      "name": "Save Awaiting Status",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "position": [
+        2144,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $('Webhook').item.json.body.instance }}",
+        "remoteJid": "=+{{ ($('Webhook').item.json.body.data.key.remoteJidAlt || $('Webhook').item.json.body.data.key.remoteJid).split('@')[0] }}",
+        "messageText": "=استلمنا صورة التحويل ✅\nكود الأوردر: {{ $('Build Telegram Message').item.json.order_code }}\nجاري مراجعة التحويل وهنأكدلك الأوردر خلال دقايق 🙏",
+        "options_message": {
+          "delay": 1200
+        }
+      },
+      "id": "a2000000-0000-4000-8000-00000000000a",
+      "name": "Tell Customer Received",
+      "type": "n8n-nodes-evolution-api-english.evolutionApi",
+      "typeVersion": 1,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "position": [
+        2368,
+        576
+      ],
+      "credentials": {
+        "evolutionApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Evolution API account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $('Webhook').item.json.body.instance }}",
+        "remoteJid": "=+{{ ($('Webhook').item.json.body.data.key.remoteJidAlt || $('Webhook').item.json.body.data.key.remoteJid).split('@')[0] }}",
+        "messageText": "=استلمنا الصورة 🙏 بس لسه مفيش أوردر مسجل باسمك. ابعتلي الأوردر الأول وبعدين ابعت صورة التحويل.",
+        "options_message": {
+          "delay": 1200
+        }
+      },
+      "id": "a2000000-0000-4000-8000-00000000000b",
+      "name": "Tell Customer No Order",
+      "type": "n8n-nodes-evolution-api-english.evolutionApi",
+      "typeVersion": 1,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "position": [
+        1712,
+        816
+      ],
+      "credentials": {
+        "evolutionApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Evolution API account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "qwen/qwen3.8-27b",
+        "options": {
+          "maxTokensToSample": 1024
+        }
+      },
+      "id": "8f2d939f-59d3-45df-886d-f92165de9c3c",
+      "name": "Groq Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        -256
+      ],
+      "credentials": {
+        "groqApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {
+          "maxTokensToSample": 1024
+        }
+      },
+      "id": "b3000000-0000-4000-8000-000000000001",
+      "name": "Groq Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        384
+      ],
+      "credentials": {
+        "groqApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $('Webhook').item.json.body.instance }}",
+        "remoteJid": "=+{{ ($('Webhook').item.json.body.data.key.remoteJidAlt || $('Webhook').item.json.body.data.key.remoteJid).split('@')[0] }}",
+        "messageText": "YOUR_PHONE_NUMBER حصلت مشكلة تقنية بسيطة عندنا 🙏 ممكن تبعت رسالتك تاني بعد دقيقة؟ أو لو مستعجل كلمنا على الرقم مباشرة.",
+        "options_message": {
+          "delay": 1200
+        }
+      },
+      "id": "c4000000-0000-4000-8000-000000000001",
+      "name": "Safe Fallback Reply",
+      "type": "n8n-nodes-evolution-api-english.evolutionApi",
+      "typeVersion": 1,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "position": [
+        528,
+        -432
+      ],
+      "credentials": {
+        "evolutionApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Evolution API account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Restaurant_P: node failed, customer got fallback reply. Check execution."
+      },
+      "id": "c4000000-0000-4000-8000-000000000002",
+      "name": "Alert Owner",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        752,
+        -432
+      ]
+    },
+    {
+      "parameters": {
+        "updates": [
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "id": "c1000000-0000-4000-8000-000000000001",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        384,
+        1184
+      ],
+      "webhookId": "f81a1610-bb73-491b-b240-54cc6279b456",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const cq = $input.first().json.callback_query;\nconst parts = String(cq.data || '').split('|');\nreturn [{ json: { action: parts[0], order_code: parts[1], query_id: cq.id, chat_id: cq.message && cq.message.chat ? cq.message.chat.id : '', from_name: (cq.from && cq.from.first_name) || '' } }];"
+      },
+      "id": "c1000000-0000-4000-8000-000000000002",
+      "name": "Parse Callback",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        1184
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_DATA_TABLE_ID"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "order_code",
+              "keyValue": "={{ $json.order_code }}"
+            },
+            {
+              "keyName": "status",
+              "keyValue": "awaiting_staff"
+            }
+          ]
+        },
+        "limit": 1
+      },
+      "id": "c1000000-0000-4000-8000-000000000003",
+      "name": "Get Order",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "position": [
+        832,
+        1184
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f1",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "awaiting_staff",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c1000000-0000-4000-8000-000000000004",
+      "name": "Order Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1056,
+        1184
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "callback",
+        "queryId": "={{ $('Parse Callback').item.json.query_id }}",
+        "additionalFields": {
+          "text": "الأوردر ده اتعالج قبل كده أو مش موجود"
+        }
+      },
+      "id": "c1000000-0000-4000-8000-000000000005",
+      "name": "Answer Already Handled",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1264,
+        976
+      ],
+      "webhookId": "6b3bd224-a3b3-41d5-adff-95ede2aaf431",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Telegram account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f2",
+              "leftValue": "={{ $('Parse Callback').item.json.action }}",
+              "rightValue": "ok",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c1000000-0000-4000-8000-000000000006",
+      "name": "Is Confirm?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1264,
+        1296
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "callback",
+        "queryId": "={{ $('Parse Callback').item.json.query_id }}",
+        "additionalFields": {
+          "text": "تم التأكيد ✅"
+        }
+      },
+      "id": "c1000000-0000-4000-8000-000000000007",
+      "name": "Answer Confirm",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1488,
+        1184
+      ],
+      "webhookId": "20c13042-80b9-4813-9191-5f054025367f",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Telegram account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_ORDERS_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "orders_P",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_ORDERS_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 0,
+          "mode": "list",
+          "cachedResultName": "الأوردرات",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_ORDERS_SHEET_ID/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "كود الطلب": "={{ $('Get Order').item.json.order_code }}",
+            "اسم العميل": "={{ $('Get Order').item.json.customer_name }}",
+            "الأوردر": "={{ $('Get Order').item.json.order_text }}",
+            "التمن": "={{ $('Get Order').item.json.total_price }}",
+            "العنوان": "={{ $('Get Order').item.json.address }}",
+            "رقم التليفون": "={{ $('Get Order').item.json.phone }}",
+            "رقم التليفون البديل": "={{ $('Get Order').item.json.alt_phone }}",
+            "طريقة الدفع": "={{ $('Get Order').item.json.payment_method }}",
+            "صورة الدفع": "={{ 'telegram_file_id: ' + $('Get Order').item.json.payment_file_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "كود الطلب",
+              "displayName": "كود الطلب",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "اسم العميل",
+              "displayName": "اسم العميل",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "الأوردر",
+              "displayName": "الأوردر",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "التمن",
+              "displayName": "التمن",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "العنوان",
+              "displayName": "العنوان",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "رقم التليفون",
+              "displayName": "رقم التليفون",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "رقم التليفون البديل",
+              "displayName": "رقم التليفون البديل",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "طريقة الدفع",
+              "displayName": "طريقة الدفع",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "صورة الدفع",
+              "displayName": "صورة الدفع",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "c1000000-0000-4000-8000-000000000008",
+      "name": "Append to Orders Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "position": [
+        1712,
+        1184
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_CRED_ID",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const o = $('Get Order').first().json;\nconst lines = [];\nlines.push('=== اوردر جديد ===');\nlines.push('الوقت: ' + new Date().toLocaleString('en-GB', {timeZone: 'Africa/Cairo'}));\nlines.push('------------------');\nlines.push('رقم الاوردر: ' + o.order_code);\nlines.push('العميل: ' + o.customer_name);\nlines.push('الاوردر: ' + o.order_text);\nlines.push('التمن: ' + o.total_price);\nlines.push('العنوان: ' + o.address);\nlines.push('التليفون: ' + o.phone);\nlines.push('الدفع: ' + o.payment_method);\nlines.push('------------------');\nconst text = lines.join('\\n') + '\\n\\n\\n';\n\nconst net = require('net');\nawait new Promise((resolve, reject) => {\n  const client = new net.Socket();\n  client.setTimeout(5000);\n  client.once('error', reject);\n  client.once('timeout', () => {\n    client.destroy();\n    reject(new Error('Printer timeout'));\n  });\n  client.connect(9100, 'host.docker.internal', () => {\n    client.write(Buffer.from(text, 'utf8'), () => {\n      client.end();\n      resolve();\n    });\n  });\n});\n\nreturn [{ json: { printed: true } }];"
+      },
+      "id": "c1000000-0000-4000-8000-000000000009",
+      "name": "Print Order",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1936,
+        1184
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_DATA_TABLE_ID"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $('Get Order').item.json.id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "confirmed"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c1000000-0000-4000-8000-00000000000a",
+      "name": "Mark Confirmed",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "position": [
+        2144,
+        1184
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $('Get Order').item.json.wa_instance }}",
+        "remoteJid": "=+{{ $('Get Order').item.json.wa_number }}",
+        "messageText": "=تم تأكيد طلبك ✅\nكود الأوردر: {{ $('Get Order').item.json.order_code }}\nجاري تحضير الأوردر وهيوصلك في أقرب وقت 🙏",
+        "options_message": {
+          "delay": 1200
+        }
+      },
+      "id": "c1000000-0000-4000-8000-00000000000b",
+      "name": "Notify Customer OK",
+      "type": "n8n-nodes-evolution-api-english.evolutionApi",
+      "typeVersion": 1,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "position": [
+        2368,
+        1184
+      ],
+      "credentials": {
+        "evolutionApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Evolution API account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=✅ تم تأكيد الأوردر {{ $('Get Order').item.json.order_code }} وتسجيله في الشيت\n{{ $('Print Order').item.json.printed ? '🖨️ تمت الطباعة' : '⚠️ فشلت الطباعة: ' + ($('Print Order').item.json.error || 'غير معروف') }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "c1000000-0000-4000-8000-00000000000c",
+      "name": "Notify Staff Confirmed",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "position": [
+        2592,
+        1184
+      ],
+      "webhookId": "3e3bdb41-df74-4a98-a6c4-faf26cc2e2dd",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "callback",
+        "queryId": "={{ $('Parse Callback').item.json.query_id }}",
+        "additionalFields": {
+          "text": "تم الرفض ❌"
+        }
+      },
+      "id": "c1000000-0000-4000-8000-00000000000d",
+      "name": "Answer Reject",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1488,
+        1424
+      ],
+      "webhookId": "3881eba1-e43c-4260-a489-c6eff5aa8932",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Telegram account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_DATA_TABLE_ID"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $('Get Order').item.json.id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "rejected"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c1000000-0000-4000-8000-00000000000e",
+      "name": "Mark Rejected",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "position": [
+        1712,
+        1424
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $('Get Order').item.json.wa_instance }}",
+        "remoteJid": "=+{{ $('Get Order').item.json.wa_number }}",
+        "messageText": "=حصلت مشكلة في الأوردر بتاعك ({{ $('Get Order').item.json.order_code }}) 🙏\nهنتواصل معاك في أقرب وقت.",
+        "options_message": {
+          "delay": 1200
+        }
+      },
+      "id": "c1000000-0000-4000-8000-00000000000f",
+      "name": "Notify Customer Reject",
+      "type": "n8n-nodes-evolution-api-english.evolutionApi",
+      "typeVersion": 1,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "position": [
+        1936,
+        1424
+      ],
+      "credentials": {
+        "evolutionApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Evolution API account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=❌ تم رفض الأوردر {{ $('Get Order').item.json.order_code }} وتم إبلاغ العميل",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "c1000000-0000-4000-8000-000000000010",
+      "name": "Notify Staff Rejected",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "position": [
+        2144,
+        1424
+      ],
+      "webhookId": "4f4022e9-b8b9-4852-b9bb-6ca69fec2a2a",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "c1000000-0000-4000-8000-000000000011",
+      "name": "Every Minute",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        384,
+        1712
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_DATA_TABLE_ID"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "status",
+              "keyValue": "awaiting_staff"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "id": "c1000000-0000-4000-8000-000000000012",
+      "name": "Get Awaiting",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "position": [
+        608,
+        1712
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = Date.now();\nconst due = $input.all().filter(i => {\n  const r = i.json;\n  if (!r || !r.id || r.reminder_sent === true) return false;\n  const t = r.awaiting_since ? new Date(r.awaiting_since).getTime() : NaN;\n  return !isNaN(t) && (now - t) >= 5 * 60 * 1000;\n});\nreturn due;"
+      },
+      "id": "c1000000-0000-4000-8000-000000000013",
+      "name": "Due For Reminder",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        1712
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=⏰ تذكير: الأوردر {{ $json.order_code }} ({{ $json.customer_name }} - {{ $json.total_price }}) لسه مستني تأكيدك. اضغط تأكيد أو رفض على رسالة الأوردر.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "c1000000-0000-4000-8000-000000000014",
+      "name": "Send Reminder",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "position": [
+        1056,
+        1712
+      ],
+      "webhookId": "a6e65759-1a30-4441-95c4-79cfe8584fde",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_DATA_TABLE_ID"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $('Due For Reminder').item.json.id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "reminder_sent": true
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "reminder_sent",
+              "displayName": "reminder_sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": false,
+              "removed": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c1000000-0000-4000-8000-000000000015",
+      "name": "Mark Reminded",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "position": [
+        1264,
+        1712
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=⚠️ فشل تسجيل الأوردر {{ $('Get Order').item.json.order_code }} في شيت Google Sheets\nسجله يدوي. باقي الخطوات (طباعة وتأكيد العميل) كملت.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "c5000000-0000-4000-8000-000000000001",
+      "name": "Alert Sheet Failed",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1712,
+        1040
+      ],
+      "webhookId": "0d8c36f8-dbdd-4704-93eb-c6ee789466bf",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Telegram account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=⚠️ الأوردر {{ $('Get Order').item.json.order_code }} اتأكد بس فشل إبلاغ العميل على واتساب. كلمه يدوي: {{ $('Get Order').item.json.phone }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "c5000000-0000-4000-8000-000000000002",
+      "name": "Alert Customer OK Failed",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2368,
+        1040
+      ],
+      "webhookId": "a2dfdc84-25e7-4b87-98c7-b78f02e48bc1",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Telegram account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=⚠️ الأوردر {{ $('Get Order').item.json.order_code }} اترفض بس فشل إبلاغ العميل على واتساب. كلمه يدوي: {{ $('Get Order').item.json.phone }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "c5000000-0000-4000-8000-000000000003",
+      "name": "Alert Customer Reject Failed",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1936,
+        1584
+      ],
+      "webhookId": "abcbe01c-d851-4b47-813a-e6f8b0038d03",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_CRED_ID",
+          "name": "Telegram account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get media in base64",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get media in base",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Safe Fallback Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File1": {
+      "main": [
+        [
+          {
+            "node": "Analyze an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get media in base64": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get media in base": {
+      "main": [
+        [
+          {
+            "node": "Convert to File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Safe Fallback Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Files from Disk1": {
+      "main": [
+        [
+          {
+            "node": "base 64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "convert to ogg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "convert to ogg": {
+      "main": [
+        [
+          {
+            "node": "Read Files from Disk1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "base 64": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Excel Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "Excel Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Items Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Excel Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send_Menu_Image": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save_Order_Details": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze an image": {
+      "main": [
+        [
+          {
+            "node": "Parse Image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Safe Fallback Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Image": {
+      "main": [
+        [
+          {
+            "node": "Is Payment Receipt?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Payment Receipt?": {
+      "main": [
+        [
+          {
+            "node": "Find Pending Order",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Pending Order": {
+      "main": [
+        [
+          {
+            "node": "Has Pending Order?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Pending Order?": {
+      "main": [
+        [
+          {
+            "node": "Build Telegram Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tell Customer No Order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Telegram Message": {
+      "main": [
+        [
+          {
+            "node": "Send Receipt to Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Receipt to Telegram": {
+      "main": [
+        [
+          {
+            "node": "Save Awaiting Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Safe Fallback Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Awaiting Status": {
+      "main": [
+        [
+          {
+            "node": "Tell Customer Received",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Excel Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Safe Fallback Reply": {
+      "main": [
+        [
+          {
+            "node": "Alert Owner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse Callback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Callback": {
+      "main": [
+        [
+          {
+            "node": "Get Order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Order": {
+      "main": [
+        [
+          {
+            "node": "Order Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Order Found?": {
+      "main": [
+        [
+          {
+            "node": "Is Confirm?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Answer Already Handled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Confirm?": {
+      "main": [
+        [
+          {
+            "node": "Answer Confirm",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Answer Reject",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer Confirm": {
+      "main": [
+        [
+          {
+            "node": "Append to Orders Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append to Orders Sheet": {
+      "main": [
+        [
+          {
+            "node": "Print Order",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Alert Sheet Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Sheet Failed": {
+      "main": [
+        [
+          {
+            "node": "Print Order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Print Order": {
+      "main": [
+        [
+          {
+            "node": "Mark Confirmed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Confirmed": {
+      "main": [
+        [
+          {
+            "node": "Notify Customer OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Customer OK": {
+      "main": [
+        [
+          {
+            "node": "Notify Staff Confirmed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Alert Customer OK Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Customer OK Failed": {
+      "main": [
+        [
+          {
+            "node": "Notify Staff Confirmed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer Reject": {
+      "main": [
+        [
+          {
+            "node": "Mark Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Rejected": {
+      "main": [
+        [
+          {
+            "node": "Notify Customer Reject",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Customer Reject": {
+      "main": [
+        [
+          {
+            "node": "Notify Staff Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Alert Customer Reject Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Customer Reject Failed": {
+      "main": [
+        [
+          {
+            "node": "Notify Staff Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Every Minute": {
+      "main": [
+        [
+          {
+            "node": "Get Awaiting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Awaiting": {
+      "main": [
+        [
+          {
+            "node": "Due For Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Due For Reminder": {
+      "main": [
+        [
+          {
+            "node": "Send Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Reminder": {
+      "main": [
+        [
+          {
+            "node": "Mark Reminded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "errorWorkflow": "YOUR_ERROR_WORKFLOW_ID"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "YOUR_INSTANCE_ID"
+  },
+  "nodeGroups": [],
+  "id": "YOUR_WORKFLOW_ID",
+  "tags": []
+}
