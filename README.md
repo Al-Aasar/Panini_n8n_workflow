@@ -1,4 +1,4 @@
-# 🍕 Panini Restaurant AI Assistant (`Restaurant_P`)
+# Panini Restaurant AI Assistant (`Restaurant_P`)
 
 > An intelligent, end-to-end restaurant ordering and payment automation system built with **n8n**, **Google Gemini 3 Flash**, and **Groq**. Fully integrates with **WhatsApp (Evolution API)**, **Telegram Staff Operations**, **Google Sheets**, and **Network Thermal POS Receipt Printers (Port 9100)**.
 
@@ -11,7 +11,7 @@
 
 ---
 
-## 📖 Overview
+## Overview
 
 **Restaurant_P** is an autonomous conversational AI agent designed for restaurants to handle complete customer lifecycles on **WhatsApp** using natural Egyptian Arabic dialogue. 
 
@@ -20,23 +20,23 @@
 2. **Dynamic Menu Lookups**: Queries live Google Sheets data via an AI tool to prevent hallucinations of items, sizes, or prices.
 3. **Automated Menu Dispatch**: Sends a high-resolution menu photo only when explicitly requested.
 4. **Automated Payment & OCR Validation**: Validates digital transfers (InstaPay, Vodafone Cash, Bank transfers) using computer vision.
-5. **Staff Order Verification**: Dispatches pending orders with receipt screenshots directly to a Telegram management channel with interactive action buttons (`✅ Confirm` / `❌ Reject`).
+5. **Staff Order Verification**: Dispatches pending orders with receipt screenshots directly to a Telegram management channel with interactive action buttons (`Confirm` / `Reject`).
 6. **Automatic POS Kitchen Printing**: Sends raw print jobs directly over TCP (Port 9100) to thermal receipt printers upon approval.
 7. **Sheets Ledger Sync**: Logs confirmed transactions to Google Sheets for inventory and accounting.
 8. **Periodic Follow-up Monitoring**: Scans every minute for orders awaiting review for more than 5 minutes and nudges staff.
 
 ---
 
-## 🏛️ System Architecture
+## System Architecture
 
 ```mermaid
 flowchart TD
-    subgraph Customer ["👤 Customer (WhatsApp / Evolution API)"]
+    subgraph Customer ["Customer (WhatsApp / Evolution API)"]
         Inbound["Incoming Message\n(Text / Voice / Image)"]
         Outbound["Outgoing Response\n(Text / Voice Note / Menu Image)"]
     end
 
-    subgraph Orchestration ["⚙️ n8n Automation Engine"]
+    subgraph Orchestration ["n8n Automation Engine"]
         Webhook["Webhook Trigger"]
         Router{"Message Router"}
         GeminiSTT["Gemini Audio Transcribe\n(STT)"]
@@ -47,11 +47,11 @@ flowchart TD
         TTS["Groq TTS + FFmpeg\n(WAV to OGG Opus)"]
     end
 
-    subgraph StaffOperations ["👨‍🍳 Staff & Fulfillment"]
+    subgraph StaffOperations ["Staff & Fulfillment"]
         Telegram["Telegram Staff Group\n(Photo + Inline Buttons)"]
         Decision{"Staff Decision"}
         OrdersSheet["Google Sheets\n(Orders Ledger)"]
-        POSPrinter["🖨️ Thermal POS Printer\n(Raw TCP Port 9100)"]
+        POSPrinter["Thermal POS Printer\n(Raw TCP Port 9100)"]
     end
 
     Inbound --> Webhook --> Router
@@ -68,33 +68,33 @@ flowchart TD
     GeminiVision -->|"Valid Receipt"| Telegram
     Telegram --> Decision
 
-    Decision -- "✅ Confirm" --> OrdersSheet
-    Decision -- "✅ Confirm" --> POSPrinter
-    Decision -- "✅ Confirm / ❌ Reject" --> Outbound
+    Decision -- "Confirm" --> OrdersSheet
+    Decision -- "Confirm" --> POSPrinter
+    Decision -- "Confirm / Reject" --> Outbound
 ```
 
 ---
 
-## 🔄 Order State Machine
+## Order State Machine
 
 The order lifecycle is tracked via an internal **n8n Data Table**:
 
 ```
-[collecting] ──(Customer uploads receipt)──> [awaiting_staff] ──(Staff Confirms)──> [confirmed] (Printed + Logged)
-                                                    │
-                                                    └──(Staff Rejects)───> [rejected] (Customer Notified)
+[collecting] --(Customer uploads receipt)--> [awaiting_staff] --(Staff Confirms)--> [confirmed] (Printed + Logged)
+                                                    |
+                                                    +--(Staff Rejects)---> [rejected] (Customer Notified)
 ```
 
 | Status | Description | Trigger / Outcome |
 | :--- | :--- | :--- |
 | `collecting` | Agent is assembling cart items, delivery address, phone, and total price. | Saved via `Save_Order_Details` tool. |
 | `awaiting_staff` | Customer submitted a verified transfer receipt screenshot. | Sent to Telegram with inline buttons; customer is notified. |
-| `confirmed` | Staff clicked `✅ Confirm` in Telegram. | Added to Google Sheets, sent to printer, customer notified via WhatsApp. |
-| `rejected` | Staff clicked `❌ Reject` in Telegram. | Customer alerted with follow-up instructions. |
+| `confirmed` | Staff clicked `Confirm` in Telegram. | Added to Google Sheets, sent to printer, customer notified via WhatsApp. |
+| `rejected` | Staff clicked `Reject` in Telegram. | Customer alerted with follow-up instructions. |
 
 ---
 
-## 🧩 Multimodal & AI Tech Stack
+## Multimodal & AI Tech Stack
 
 - **Large Language Models**:
   - `models/gemini-3-flash-preview`: Audio transcription (STT), receipt OCR/Vision analysis, and primary LangChain chat agent.
@@ -108,7 +108,7 @@ The order lifecycle is tracked via an internal **n8n Data Table**:
 
 ---
 
-## 📋 Prerequisites
+## Prerequisites
 
 Before importing and running the workflow, make sure you have:
 
@@ -129,7 +129,7 @@ Before importing and running the workflow, make sure you have:
 
 ---
 
-## ⚙️ Configuration & Placeholders
+## Configuration & Placeholders
 
 Search and replace the following placeholder values in the workflow JSON before deployment:
 
@@ -148,7 +148,7 @@ Search and replace the following placeholder values in the workflow JSON before 
 
 ---
 
-## 🗄️ n8n Data Table Schema
+## n8n Data Table Schema
 
 Create a Data Table in n8n named `restaurant_orders` with the following column definitions:
 
@@ -171,7 +171,7 @@ Create a Data Table in n8n named `restaurant_orders` with the following column d
 
 ---
 
-## 🖨️ Mock Thermal Printer Server
+## Mock Thermal Printer Server
 
 For testing raw TCP socket printing without physical hardware, run this lightweight Node.js mock server:
 
@@ -192,7 +192,7 @@ const server = net.createServer((socket) => {
     const receiptText = rawData.toString('utf8').replace(/[\x00-\x08\x0B-\x1F]/g, '');
     
     console.log('\n========================================');
-    console.log('🧾 NEW ORDER RECEIVED FOR PRINTING:');
+    console.log('NEW ORDER RECEIVED FOR PRINTING:');
     console.log('========================================');
     console.log(receiptText);
     console.log('========================================\n');
@@ -204,7 +204,7 @@ const server = net.createServer((socket) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`✅ Mock Thermal Printer running on port ${PORT}...`);
+  console.log(`Mock Thermal Printer running on port ${PORT}...`);
 });
 ```
 
@@ -217,7 +217,7 @@ node printer-mock.js
 
 ---
 
-## 🚀 Deployment Steps
+## Deployment Steps
 
 1. **Import Workflow**:
    - In n8n, navigate to **Workflows** -> **Import from File / JSON**.
@@ -242,4 +242,3 @@ node printer-mock.js
 ## Author
 
 - **Muhammad Alaasar** - [eng.mo.alaasar@gmail.com](mailto:eng.mo.alaasar@gmail.com)
-
